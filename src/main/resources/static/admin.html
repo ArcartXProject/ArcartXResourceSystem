@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArcartX 资源管理</title>
+    <link rel="icon" type="image/x-icon" href="/static/logo.ico">
+    <link rel="apple-touch-icon" href="/static/logo.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #0F172A;
+            color: #E2E8F0;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* 登录页面 */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B  100%);
+        }
+
+        .login-card {
+            background: #1E293B;
+            border-radius: 16px;
+            padding: 3rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+            border: 1px solid #334155;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .login-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #3B82F6;
+        }
+
+        .login-subtitle {
+            text-align: center;
+            color: #94A3B8;
+            margin-bottom: 2rem;
+        }
+
+        /* 主界面 */
+        .main-container {
+            min-height: 100vh;
+            background: #0F172A;
+        }
+
+        .header {
+            background: #1E293B;
+            border-bottom: 1px solid #334155;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3B82F6;
+        }
+
+        .logout-btn {
+            background: #EF4444;
+            color: white;
+            border: none;
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #DC2626;
+        }
+
+        /* 仪表板布局 */
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            position: sticky;
+            top: 100px;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* 卡片设计 */
+        .card {
+            background: #1E293B;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #F8FAFC;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* 表单设计 */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #CBD5E1;
+            font-size: 0.875rem;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: #0F172A;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            color: #F8FAFC;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #64748B;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* 按钮设计 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: #3B82F6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563EB;
+        }
+
+        .btn-secondary {
+            background: #475569;
+            color: #E2E8F0;
+        }
+
+        .btn-secondary:hover {
+            background: #64748B;
+        }
+
+        .btn-danger {
+            background: #EF4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #DC2626;
+        }
+
+        .btn:disabled {
+            background: #64748B;
+            color: #94A3B8;
+            cursor: not-allowed;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 0.875rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        /* 消息提示 */
+        .message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+            border-left: 4px solid;
+        }
+
+        .message.success {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22C55E;
+            border-left-color: #22C55E;
+        }
+
+        .message.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #EF4444;
+            border-left-color: #EF4444;
+        }
+
+        .message.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: #F59E0B;
+            border-left-color: #F59E0B;
+        }
+
+        .message.info {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3B82F6;
+            border-left-color: #3B82F6;
+        }
+
+        /* 文件管理 */
+        .file-list {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #0F172A;
+            border-radius: 8px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #334155;
+        }
+
+        .file-item:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            background: #3B82F6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.75rem;
+            margin-right: 1rem;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #F8FAFC;
+            margin-bottom: 0.25rem;
+        }
+
+        .file-meta {
+            font-size: 0.875rem;
+            color: #94A3B8;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* 验证码 */
+        .captcha-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #0F172A;
+            border-radius: 8px;
+            border: 1px solid #475569;
+        }
+
+        .captcha-image {
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #475569;
+        }
+
+        .captcha-image:hover {
+            border-color: #3B82F6;
+        }
+
+        .captcha-input {
+            max-width: 120px;
+        }
+
+        /* 上传区域 */
+        .upload-area {
+            border: 2px dashed #475569;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            transition: all 0.2s ease;
+            background: #0F172A;
+        }
+
+        .upload-area.dragover {
+            border-color: #3B82F6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .file-input {
+            width: 100%;
+            padding: 0.875rem;
+            background: #0F172A;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            color: #E2E8F0;
+            cursor: pointer;
+        }
+
+        /* 流量显示 */
+        .traffic-display {
+            background: #0F172A;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border: 1px solid #334155;
+        }
+
+        .traffic-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .traffic-stat {
+            text-align: center;
+            padding: 1rem;
+            background: #1E293B;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+
+        .traffic-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3B82F6;
+            margin-bottom: 0.25rem;
+        }
+
+        .traffic-label {
+            font-size: 0.75rem;
+            color: #94A3B8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #334155;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #22C55E;
+            border-radius: 4px;
+            transition: width 0.8s ease;
+        }
+
+        .progress-fill.warning {
+            background: #F59E0B;
+        }
+
+        .progress-fill.danger {
+            background: #EF4444;
+        }
+
+        /* API密钥显示 */
+        .api-key-display {
+            background: #0F172A;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Monaco', 'Consolas', monospace;
+            color: #3B82F6;
+            word-break: break-all;
+            margin: 0.75rem 0;
+            font-size: 0.875rem;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #64748B;
+        }
+
+        /* 弹窗样式 - 修复布局问题 */
+        .modal {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999 !important;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-content {
+            background: #1E293B;
+            border-radius: 12px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            border: 1px solid #334155;
+            width: 90%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            color: #F8FAFC;
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #94A3B8;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 4px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            color: #F8FAFC;
+            background: #334155;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+
+            .sidebar {
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .dashboard {
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            .traffic-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-row {
+                flex-direction: column;
+            }
+
+            .login-card {
+                padding: 2rem;
+                margin: 1rem;
+            }
+        }
+
+        /* 工具类 */
+        .hidden {
+            display: none !important;
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* 滚动条 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1E293B;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748B;
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录界面 -->
+    <div class="login-container" id="authSection">
+        <div class="login-card">
+            <h1 class="login-title">ArcartX</h1>
+            <p class="login-subtitle">资源管理后台</p>
+            
+            <div id="loginMessage"></div>
+            
+            <form onsubmit="login(); return false;">
+                <div class="form-group">
+                    <label class="form-label" for="username">管理员账户</label>
+                    <input type="text" id="username" class="form-input" value="admin" placeholder="请输入用户名" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">登录密码</label>
+                    <input type="password" id="password" class="form-input" value="admin123" placeholder="请输入密码" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">安全验证</label>
+                    <div class="captcha-container">
+                        <img id="captchaImage" class="captcha-image" width="120" height="40" 
+                             onclick="refreshCaptcha()" title="点击刷新验证码" alt="验证码">
+                        <input type="text" id="captcha" class="form-input captcha-input" 
+                               placeholder="输入答案" autocomplete="off" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" id="loginBtn">
+                    登录管理后台
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 主界面 -->
+    <div class="main-container hidden" id="mainSection">
+        <!-- 头部导航 -->
+        <div class="header">
+            <h1 class="header-title">ArcartX 资源管理后台</h1>
+            <button class="logout-btn" onclick="logout()">退出</button>
+        </div>
+
+        <!-- 仪表板 -->
+        <div class="dashboard">
+            <!-- 侧边栏 -->
+            <div class="sidebar">
+                <!-- 文件上传 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">文件上传</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="uploadMessage"></div>
+                        
+                        <div class="upload-area" id="uploadArea">
+                            <p style="margin-bottom: 1rem; color: #94A3B8;">拖放ZIP文件到此处</p>
+                            <input type="file" id="fileInput" class="file-input" accept=".zip">
+                        </div>
+                        
+                        <button class="btn btn-primary btn-block" onclick="uploadFile()">
+                            上传文件
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 签名链接生成 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">签名链接</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="signedLinkMessage"></div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="fileName">选择文件</label>
+                            <select id="fileName" class="form-select">
+                                <option value="">请先刷新文件列表</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="expirationMinutes">过期时间</label>
+                                <input type="number" id="expirationMinutes" class="form-input" value="30" min="1" placeholder="分钟">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="downloadLimit">下载次数</label>
+                                <input type="number" id="downloadLimit" class="form-input" value="3" min="1" placeholder="次数">
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary btn-block" onclick="generateSignedLink()">
+                            生成签名链接
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 系统设置 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">系统设置</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="btn-row">
+                            <button class="btn btn-primary" onclick="resetApiKey()">更新密钥</button>
+                            <button class="btn btn-secondary" onclick="showPasswordModal()">改密码</button>
+                        </div>
+                        <button class="btn btn-secondary btn-block" onclick="showConfigModal()" style="margin-top: 1rem;">
+                            系统参数配置
+                        </button>
+                        <div class="message info" style="margin-top: 1rem; font-size: 0.875rem;">
+                            <strong>提示：</strong>系统参数可以实时调整，用于控制流量成本和访问频率
+                        </div>
+                        <div id="apiKeyMessage"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 主内容区 -->
+            <div class="main-content">
+                <!-- 流量监控 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">流量监控</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="loadTrafficStats()">刷新</button>
+                    </div>
+                    <div class="card-body">
+                        <div id="trafficMessage"></div>
+                        <div id="trafficStats"></div>
+                    </div>
+                </div>
+
+                <!-- 文件管理 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">文件管理</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="loadFiles()">刷新列表</button>
+                    </div>
+                    <div class="card-body">
+                        <div id="filesList" class="file-list"></div>
+                    </div>
+                </div>
+
+                <!-- IP白名单管理 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">IP访问控制</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="whitelistMessage"></div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="ipWhitelist">授权IP地址</label>
+                            <textarea id="ipWhitelist" class="form-input form-textarea" rows="5" 
+                                      placeholder="192.168.1.100&#10;10.0.0.50&#10;&#10;留空表示允许所有IP"></textarea>
+                        </div>
+                        
+                        <div class="btn-row">
+                            <button class="btn btn-secondary" onclick="loadIpWhitelist()">加载设置</button>
+                            <button class="btn btn-primary" onclick="updateIpWhitelist()">保存白名单</button>
+                        </div>
+                        
+                        <div class="message info" style="margin-top: 1rem;">
+                            <strong>提示：</strong>启用IP白名单可有效防止API密钥泄露风险
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 密码修改弹窗 - 修复为全屏弹窗 -->
+    <div id="passwordModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>更改管理员密码</h3>
+                <button class="modal-close" onclick="hidePasswordModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="passwordMessage"></div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="currentPassword">当前密码</label>
+                    <input type="password" id="currentPassword" class="form-input" placeholder="请输入当前密码">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="newPassword">新密码</label>
+                    <input type="password" id="newPassword" class="form-input" placeholder="至少6位字符">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="confirmPassword">确认新密码</label>
+                    <input type="password" id="confirmPassword" class="form-input" placeholder="再次输入新密码">
+                </div>
+                
+                <div class="btn-row">
+                    <button class="btn btn-secondary" onclick="hidePasswordModal()">取消</button>
+                    <button class="btn btn-primary" onclick="changePassword()">更改密码</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 系统配置弹窗 -->
+    <div id="configModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3>系统参数配置</h3>
+                <button class="modal-close" onclick="hideConfigModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="configMessage"></div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="configDailyLimit">全局每日流量限制 (GB)</label>
+                    <input type="number" id="configDailyLimit" class="form-input" min="1" max="1024" placeholder="200">
+                    <small style="color: #64748B;">所有用户累计下载流量上限，达到后当日停止服务 | 范围: 1-1024GB</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="configDownloadRate">单IP下载频率限制</label>
+                    <input type="number" id="configDownloadRate" class="form-input" min="1" max="1000" placeholder="30">
+                    <small style="color: #64748B;">每个IP地址每分钟最多下载次数，防止单点滥用 | 范围: 1-1000次/分钟</small>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="configLoginRate">单IP登录频率限制</label>
+                        <input type="number" id="configLoginRate" class="form-input" min="1" max="100" placeholder="10">
+                        <small style="color: #64748B;">每个IP每小时最多登录尝试次数，防暴力破解 | 范围: 1-100次/小时</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="configFileSize">单文件大小上限 (MB)</label>
+                        <input type="number" id="configFileSize" class="form-input" min="1" max="2048" placeholder="512">
+                        <small style="color: #64748B;">允许上传的单个文件最大大小 | 范围: 1-2048MB</small>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="configLinkMinutes">签名链接时效上限</label>
+                        <input type="number" id="configLinkMinutes" class="form-input" min="1" max="1440" placeholder="60">
+                        <small style="color: #64748B;">生成签名链接时可设置的最大有效期 | 范围: 1-1440分钟(24小时)</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="configLinkDownloads">签名链接次数上限</label>
+                        <input type="number" id="configLinkDownloads" class="form-input" min="1" max="100" placeholder="10">
+                        <small style="color: #64748B;">生成签名链接时可设置的最大下载次数 | 范围: 1-100次</small>
+                    </div>
+                </div>
+
+
+                <div class="btn-row">
+                    <button class="btn btn-secondary" onclick="loadSystemConfig()">重新加载</button>
+                    <button class="btn btn-secondary" onclick="hideConfigModal()">取消</button>
+                    <button class="btn btn-primary" onclick="updateSystemConfig()">保存配置</button>
+                </div>
+                
+                <div class="message info" style="margin-top: 1rem; font-size: 0.875rem; line-height: 1.5;">
+                    <strong>配置说明：</strong><br>
+                    • <strong>全局流量限制</strong>：控制总成本，建议根据预算设置<br>
+                    • <strong>下载频率限制</strong>：防止单用户滥用，建议设置合理值<br>
+                    • <strong>登录频率限制</strong>：防暴力破解，建议保持较低值<br>
+                    • <strong>文件大小限制</strong>：控制存储空间，根据需求设置<br>
+                    • <strong>签名链接限制</strong>：控制链接的最大权限范围
+                </div>
+                
+                <div class="message warning" style="margin-top: 1rem;">
+                    <strong>重要：</strong>配置修改后立即生效，无需重启服务。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let token = localStorage.getItem('jwt_token');
+        const baseUrl = window.location.origin;
+        let currentCaptchaId = null;
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            if (token) {
+                validateToken();
+            } else {
+                showAuthSection();
+                setTimeout(refreshCaptcha, 200);
+            }
+            setupFileUpload();
+        });
+
+        // 设置文件上传拖拽
+        function setupFileUpload() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            uploadArea.addEventListener('dragover', () => uploadArea.classList.add('dragover'));
+            uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+            
+            uploadArea.addEventListener('drop', function(e) {
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0 && files[0].name.toLowerCase().endsWith('.zip')) {
+                    fileInput.files = files;
+                    uploadFile();
+                }
+            });
+        }
+
+        // 显示消息
+        function showMessage(elementId, message, type = 'success') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="message ${type}">${message}</div>`;
+            setTimeout(() => {
+                if (element.firstElementChild) {
+                    element.innerHTML = '';
+                }
+            }, 5000);
+        }
+
+        // 刷新验证码
+        async function refreshCaptcha() {
+            try {
+                const response = await fetch(`${baseUrl}/api/auth/captcha`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentCaptchaId = data.captchaId;
+                    const captchaImg = document.getElementById('captchaImage');
+                    captchaImg.src = data.captchaImage;
+                    document.getElementById('captcha').value = '';
+                } else {
+                    showMessage('loginMessage', '验证码加载失败', 'error');
+                }
+            } catch (error) {
+                showMessage('loginMessage', '验证码请求失败: ' + error.message, 'error');
+            }
+        }
+
+        // 登录
+        async function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const captcha = document.getElementById('captcha').value.trim();
+            
+            if (!username || !password || !captcha || !currentCaptchaId) {
+                showMessage('loginMessage', '请完整填写所有信息', 'error');
+                return;
+            }
+            
+            const loginBtn = document.getElementById('loginBtn');
+            loginBtn.disabled = true;
+            loginBtn.textContent = '登录中...';
+            
+            try {
+                const response = await fetch(`${baseUrl}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, captcha, captchaId: currentCaptchaId })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.token) {
+                    token = data.token;
+                    localStorage.setItem('jwt_token', token);
+                    showMessage('loginMessage', '登录成功', 'success');
+                    
+                    setTimeout(() => {
+                        showMainSection();
+                        initDashboard();
+                    }, 1000);
+                } else {
+                    showMessage('loginMessage', data.message || '登录失败', 'error');
+                    refreshCaptcha();
+                }
+            } catch (error) {
+                showMessage('loginMessage', '网络错误: ' + error.message, 'error');
+                refreshCaptcha();
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = '登录管理后台';
+            }
+        }
+
+        // 验证令牌
+        async function validateToken() {
+            if (!token) {
+                showAuthSection();
+                return;
+            }
+
+            try {
+                const response = await fetch(`${baseUrl}/api/auth/validate`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    showMainSection();
+                    initDashboard();
+                } else {
+                    handleTokenExpired();
+                }
+            } catch (error) {
+                handleTokenExpired();
+            }
+        }
+
+        // 处理令牌过期
+        function handleTokenExpired() {
+            localStorage.removeItem('jwt_token');
+            token = null;
+            showMessage('loginMessage', '登录已过期，请重新登录', 'warning');
+            showAuthSection();
+            refreshCaptcha();
+        }
+
+        // 显示界面
+        function showAuthSection() {
+            document.getElementById('authSection').classList.remove('hidden');
+            document.getElementById('mainSection').classList.add('hidden');
+        }
+
+        function showMainSection() {
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('mainSection').classList.remove('hidden');
+        }
+
+        // 初始化仪表板
+        function initDashboard() {
+            loadFiles();
+            loadTrafficStats();
+            loadIpWhitelist();
+            updateFormLimits();
+        }
+
+        // 更新表单限制值
+        async function updateFormLimits() {
+            try {
+                const response = await fetch(`${baseUrl}/api/admin/config/list`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.data && data.data.configs) {
+                        const configs = data.data.configs;
+                        
+                        configs.forEach(config => {
+                            switch (config.key) {
+                                case 'signed_link_max_minutes':
+                                    document.getElementById('expirationMinutes').max = config.value;
+                                    break;
+                                case 'signed_link_max_downloads':
+                                    document.getElementById('downloadLimit').max = config.value;
+                                    break;
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.log('更新表单限制失败:', error);
+            }
+        }
+
+        // 退出登录
+        function logout() {
+            localStorage.removeItem('jwt_token');
+            token = null;
+            showAuthSection();
+            
+            // 清空表单
+            document.getElementById('username').value = 'admin';
+            document.getElementById('password').value = 'admin123';
+            document.getElementById('captcha').value = '';
+            
+            setTimeout(refreshCaptcha, 200);
+        }
+
+        // 文件上传
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showMessage('uploadMessage', '请选择文件', 'error');
+                return;
+            }
+            
+            if (!file.name.toLowerCase().endsWith('.zip')) {
+                showMessage('uploadMessage', '只支持ZIP格式文件', 'error');
+                return;
+            }
+            
+            // 前端文件大小验证（具体限制由后端API验证）
+            if (file.size > 2147483648) { // 2GB硬限制
+                showMessage('uploadMessage', '文件过大，请选择更小的文件', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch(`${baseUrl}/api/files/upload`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+                
+                if (response.status === 401) {
+                    handleTokenExpired();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('uploadMessage', `上传成功: ${data.data.fileName}`, 'success');
+                    fileInput.value = '';
+                    loadFiles();
+                } else {
+                    showMessage('uploadMessage', data.error || '上传失败', 'error');
+                }
+            } catch (error) {
+                showMessage('uploadMessage', '网络错误: ' + error.message, 'error');
+            }
+        }
+
+        // 加载文件列表
+        async function loadFiles() {
+            try {
+                const response = await fetch(`${baseUrl}/api/files/list`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.status === 401) {
+                    handleTokenExpired();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayFiles(data.data.files);
+                    updateFileSelect(data.data.files);
+                }
+            } catch (error) {
+                console.error('加载文件列表失败:', error);
+            }
+        }
+
+        // 显示文件列表
+        function displayFiles(files) {
+            const container = document.getElementById('filesList');
+            
+            if (!files || files.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p>暂无文件</p>
+                        <small>请先上传ZIP文件</small>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = files.map(file => {
+                const fileSize = formatFileSize(file.size);
+                const lastModified = new Date(file.lastModified).toLocaleString('zh-CN');
+                
+                return `
+                    <div class="file-item">
+                        <div class="file-icon">ZIP</div>
+                        <div class="file-info">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-meta">${fileSize} • ${lastModified}</div>
+                        </div>
+                        <div class="file-actions">
+                            <button class="btn btn-primary btn-sm" onclick="generateQuickLink('${file.name}')">生成链接</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteFile('${file.name}')">删除</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 更新文件选择器
+        function updateFileSelect(files) {
+            const select = document.getElementById('fileName');
+            select.innerHTML = '<option value="">选择文件</option>';
+            
+            if (files && files.length > 0) {
+                files.forEach(file => {
+                    const option = document.createElement('option');
+                    option.value = file.name;
+                    option.textContent = file.name;
+                    select.appendChild(option);
+                });
+            }
+        }
+
+        // 删除文件
+        async function deleteFile(fileName) {
+            if (!confirm(`确定要删除文件 "${fileName}" 吗？`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${baseUrl}/api/files/${encodeURIComponent(fileName)}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.status === 401) {
+                    handleTokenExpired();
+                    return;
+                }
+                
+                if (response.ok) {
+                    loadFiles();
+                }
+            } catch (error) {
+                console.error('删除文件失败:', error);
+            }
+        }
+
+        // 生成签名链接
+        async function generateSignedLink() {
+            const fileName = document.getElementById('fileName').value;
+            const expirationMinutes = parseInt(document.getElementById('expirationMinutes').value);
+            const downloadLimit = parseInt(document.getElementById('downloadLimit').value);
+            
+            if (!fileName) {
+                showMessage('signedLinkMessage', '请选择文件', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${baseUrl}/api/files/generate-signed-link`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ fileName, expirationMinutes, downloadLimit })
+                });
+                
+                if (response.status === 401) {
+                    handleTokenExpired();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    const fullUrl = `${baseUrl}${data.data.downloadUrl}`;
+                    const expiresAt = new Date(data.data.expiresAt).toLocaleString('zh-CN');
+                    
+                    showMessage('signedLinkMessage', `
+                        <strong>链接生成成功</strong><br><br>
+                        <div class="api-key-display">${fullUrl}</div>
+                        过期时间: ${expiresAt}<br>
+                        下载次数: ${data.data.downloadLimit} 次
+                    `, 'success');
+                } else {
+                    showMessage('signedLinkMessage', data.error || '生成失败', 'error');
+                }
+            } catch (error) {
+                showMessage('signedLinkMessage', '网络错误: ' + error.message, 'error');
+            }
+        }
+
+        function generateQuickLink(fileName) {
+            document.getElementById('fileName').value = fileName;
+            generateSignedLink();
+        }
+
+        // 加载流量统计
+        async function loadTrafficStats() {
+            try {
+                const response = await fetch(`${baseUrl}/api/admin/keys/traffic-stats`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.status === 401) {
+                    handleTokenExpired();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    displayTrafficStats(data.data);
+                } else {
+                    showMessage('trafficMessage', data.error || '流量统计加载失败', 'error');
+                }
+            } catch (error) {
+                showMessage('trafficMessage', '网络错误: ' + error.message, 'error');
+            }
+        }
+
+        function displayTrafficStats(stats) {
+            const container = document.getElementById('trafficStats');
+            const usagePercent = ((stats.dailyLimit - stats.remainingBytes) / stats.dailyLimit * 100);
+            let progressClass = 'progress-fill';
+            
+            if (usagePercent > 80) progressClass += ' danger';
+            else if (usagePercent > 60) progressClass += ' warning';
+            
+            container.innerHTML = `
+                <div class="traffic-display">
+                    <div class="traffic-grid">
+                        <div class="traffic-stat">
+                            <div class="traffic-value">${stats.todayUsage ? stats.todayUsage.totalGB.toFixed(2) : '0.00'}</div>
+                            <div class="traffic-label">已使用 GB</div>
+                        </div>
+                        <div class="traffic-stat">
+                            <div class="traffic-value">${stats.remainingGB.toFixed(2)}</div>
+                            <div class="traffic-label">剩余 GB</div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-bar">
+                        <div class="${progressClass}" style="width: ${usagePercent.toFixed(1)}%"></div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #94A3B8; margin-top: 0.5rem;">
+                        <span>使用率: ${usagePercent.toFixed(1)}%</span>
+                        <span>限额: ${stats.dailyLimitGB.toFixed(0)} GB/日</span>
+                    </div>
+                    
+                    ${stats.todayUsage ? `
+                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #334155; font-size: 0.75rem; color: #64748B;">
+                            今日下载次数: ${stats.todayUsage.downloadCount}
+                        </div>
+                    ` : ''}
+                    
+                    ${stats.isLimitExceeded ? '<div style="color: #EF4444; font-weight: 600; margin-top: 1rem;">流量已达上限</div>' : ''}
+                </div>
+            `;
+        }
+
+        // IP白名单管理
+        async function loadIpWhitelist() {
+            try {
+                const response = await fetch(`${baseUrl}/api/admin/keys/whitelist`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.status === 401) {
+                    handleTokenExpired();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const whitelist = data.data.ipWhitelist || [];
+                    document.getElementById('ipWhitelist').value = whitelist.join('\n');
+                    showMessage('whitelistMessage', `已加载 ${whitelist.length} 个授权IP`, 'success');
+                } else {
+                    showMessage('whitelistMessage', data.error || '加载失败', 'error');
+                }
+            } catch (error) {
+                showMessage('whitelistMessage', '网络错误: ' + error.message, 'error');
+            }
+        }
+
+        async function updateIpWhitelist() {
+            const textarea = document.getElementById('ipWhitelist');
+            const ipText = textarea.value.trim();
+            const ipList = ipText === '' ? [] : ipText.split('\n').map(ip => ip.trim()).filter(ip => ip !== '');
+            
+            // 验证IP格式
+            const invalidIps = ipList.filter(ip => !isValidIPAddress(ip));
+            if (invalidIps.length > 0) {
+                showMessage('whitelistMessage', `IP格式错误: ${invalidIps.join(', ')}`, 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${baseUrl}/api/admin/keys/whitelist`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ ipWhitelist: ipList })
+                });
+                
+                if (response.status === 401) {
+                    handleTokenExpired();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const message = ipList.length === 0 ? 
+                        '白名单已清空，允许所有IP访问' : 
+                        `已授权 ${ipList.length} 个IP地址`;
+                    showMessage('whitelistMessage', message, ipList.length === 0 ? 'warning' : 'success');
+                } else {
+                    showMessage('whitelistMessage', data.error || '更新失败', 'error');
+                }
+            } catch (error) {
+                showMessage('whitelistMessage', '网络错误: ' + error.message, 'error');
+            }
+        }
+
+        // API密钥管理
+        async function resetApiKey() {
+            if (!confirm('确定要更新API密钥吗？\n\n更新后原密钥立即失效，新密钥将在控制台日志显示。')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${baseUrl}/api/admin/keys/reset`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.status === 401) {
+                    handleTokenExpired();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('apiKeyMessage', 'API密钥已更新，请查看控制台日志获取新密钥', 'success');
+                } else {
+                    showMessage('apiKeyMessage', data.error || '更新失败', 'error');
+                }
+            } catch (error) {
+                showMessage('apiKeyMessage', '网络错误: ' + error.message, 'error');
+            }
+        }
+
+        // 密码修改弹窗
+        function showPasswordModal() {
+            document.getElementById('passwordModal').classList.remove('hidden');
+            document.getElementById('currentPassword').focus();
+        }
+
+        function hidePasswordModal() {
+            document.getElementById('passwordModal').classList.add('hidden');
+            // 清空表单
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            document.getElementById('passwordMessage').innerHTML = '';
+        }
+
+        // 系统配置弹窗管理
+        function showConfigModal() {
+            document.getElementById('configModal').classList.remove('hidden');
+            loadSystemConfig();
+        }
+
+        function hideConfigModal() {
+            document.getElementById('configModal').classList.add('hidden');
+            document.getElementById('configMessage').innerHTML = '';
+        }
+
+        // 加载系统配置
+        async function loadSystemConfig() {
+            try {
+                const response = await fetch(`${baseUrl}/api/admin/config/list`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.status === 401) {
+                    handleTokenExpired();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.data && data.data.configs) {
+                    const configs = data.data.configs;
+                    
+                    // 设置表单值
+                    configs.forEach(config => {
+                        switch (config.key) {
+                            case 'daily_traffic_limit':
+                                const gb = Math.round(parseInt(config.value) / (1024 * 1024 * 1024));
+                                document.getElementById('configDailyLimit').value = gb;
+                                break;
+                            case 'download_rate_limit':
+                                document.getElementById('configDownloadRate').value = config.value;
+                                break;
+                            case 'login_rate_limit':
+                                document.getElementById('configLoginRate').value = config.value;
+                                break;
+                            case 'max_file_size':
+                                const mb = Math.round(parseInt(config.value) / (1024 * 1024));
+                                document.getElementById('configFileSize').value = mb;
+                                break;
+                            case 'signed_link_max_minutes':
+                                document.getElementById('configLinkMinutes').value = config.value;
+                                break;
+                            case 'signed_link_max_downloads':
+                                document.getElementById('configLinkDownloads').value = config.value;
+                                break;
+                        }
+                    });
+                    
+                    showMessage('configMessage', '系统配置加载成功', 'success');
+                } else {
+                    showMessage('configMessage', data.error || '配置加载失败', 'error');
+                }
+            } catch (error) {
+                showMessage('configMessage', '网络错误: ' + error.message, 'error');
+            }
+        }
+
+        // 更新系统配置
+        async function updateSystemConfig() {
+            // 获取表单值
+            const dailyLimitGB = parseInt(document.getElementById('configDailyLimit').value);
+            const downloadRate = parseInt(document.getElementById('configDownloadRate').value);
+            const loginRate = parseInt(document.getElementById('configLoginRate').value);
+            const fileSizeMB = parseInt(document.getElementById('configFileSize').value);
+            const linkMinutes = parseInt(document.getElementById('configLinkMinutes').value);
+            const linkDownloads = parseInt(document.getElementById('configLinkDownloads').value);
+            
+            // 验证输入
+            if (isNaN(dailyLimitGB) || dailyLimitGB < 1 || dailyLimitGB > 1024) {
+                showMessage('configMessage', '每日流量限制必须在1-1024GB之间', 'error');
+                return;
+            }
+            
+            if (isNaN(downloadRate) || downloadRate < 1 || downloadRate > 1000) {
+                showMessage('configMessage', '下载速率限制必须在1-1000之间', 'error');
+                return;
+            }
+            
+            // 转换为字节数
+            const dailyLimitBytes = dailyLimitGB * 1024 * 1024 * 1024;
+            const fileSizeBytes = fileSizeMB * 1024 * 1024;
+            
+            const configData = {
+                'daily_traffic_limit': dailyLimitBytes.toString(),
+                'download_rate_limit': downloadRate.toString(),
+                'login_rate_limit': loginRate.toString(),
+                'max_file_size': fileSizeBytes.toString(),
+                'signed_link_max_minutes': linkMinutes.toString(),
+                'signed_link_max_downloads': linkDownloads.toString()
+            };
+            
+            try {
+                const response = await fetch(`${baseUrl}/api/admin/config/update`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ configs: configData })
+                });
+                
+                if (response.status === 401) {
+                    handleTokenExpired();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('configMessage', `配置更新成功，已更新 ${data.data.updatedCount} 项设置`, 'success');
+                    // 2秒后关闭弹窗
+                    setTimeout(() => {
+                        hideConfigModal();
+                        // 重新加载流量统计以反映新的限制
+                        loadTrafficStats();
+                    }, 2000);
+                } else {
+                    showMessage('configMessage', data.error || '配置更新失败', 'error');
+                }
+            } catch (error) {
+                showMessage('configMessage', '网络错误: ' + error.message, 'error');
+            }
+        }
+
+        async function changePassword() {
+            const currentPassword = document.getElementById('currentPassword').value.trim();
+            const newPassword = document.getElementById('newPassword').value.trim();
+            const confirmPassword = document.getElementById('confirmPassword').value.trim();
+            
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                showMessage('passwordMessage', '请填写所有密码字段', 'error');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                showMessage('passwordMessage', '新密码长度不能少于6位', 'error');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showMessage('passwordMessage', '两次输入的新密码不一致', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${baseUrl}/api/auth/change-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+                
+                if (response.status === 401) {
+                    handleTokenExpired();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('passwordMessage', '密码更改成功，即将重新登录', 'success');
+                    setTimeout(() => {
+                        hidePasswordModal();
+                        logout();
+                    }, 2000);
+                } else {
+                    showMessage('passwordMessage', data.message || '密码更改失败', 'error');
+                }
+            } catch (error) {
+                showMessage('passwordMessage', '网络错误: ' + error.message, 'error');
+            }
+        }
+
+        // 工具函数
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function isValidIPAddress(ip) {
+            const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            return ipRegex.test(ip);
+        }
+
+        // 键盘快捷键
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !document.getElementById('authSection').classList.contains('hidden')) {
+                login();
+            }
+            
+            if (event.key === 'Escape') {
+                hidePasswordModal();
+                hideConfigModal();
+            }
+        });
+
+        // 点击模态背景关闭弹窗
+        document.addEventListener('click', function(event) {
+            const passwordModal = document.getElementById('passwordModal');
+            const configModal = document.getElementById('configModal');
+            
+            if (event.target === passwordModal) {
+                hidePasswordModal();
+            }
+            
+            if (event.target === configModal) {
+                hideConfigModal();
+            }
+        });
+    </script>
+</body>
+</html>
