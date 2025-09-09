@@ -49,9 +49,7 @@ fun Route.apiKeyRoutes(databaseService: DatabaseService) {
                                 data = ApiKeyStatusResponse(
                                     success = true,
                                     maskedKey = apiKeyInfo.maskedKey,
-                                    isActive = apiKeyInfo.isActive,
                                     createdAt = apiKeyInfo.createdAt,
-                                    lastUsedAt = apiKeyInfo.lastUsedAt,
                                     message = "API密钥状态获取成功"
                                 )
                             )

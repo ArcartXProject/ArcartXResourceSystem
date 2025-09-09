@@ -104,17 +104,12 @@ data class SignedLinkRecord(
 data class ApiKeyInfo(
     val id: Int,
     val keyName: String,
-    val isActive: Boolean,
-    val createdAt: Instant,
-    val expiresAt: Instant?,
-    val lastUsedAt: Instant?
+    val createdAt: Instant
 )
 
 data class ApiKeyStatusInfo(
     val maskedKey: String,
-    val isActive: Boolean,
-    val createdAt: Instant,
-    val lastUsedAt: Instant?
+    val createdAt: Instant
 )
 
 @Serializable
@@ -128,9 +123,7 @@ data class ApiKeyResetResponse(
 data class ApiKeyStatusResponse(
     val success: Boolean,
     val maskedKey: String? = null,
-    val isActive: Boolean = false,
     val createdAt: Instant? = null,
-    val lastUsedAt: Instant? = null,
     val message: String? = null
 )
 

@@ -36,9 +36,11 @@ import java.time.ZoneOffset
 class DatabaseService {
     private val logger = LoggerFactory.getLogger(DatabaseService::class.java)
     private val configCache = mutableMapOf<String, String>()
+    private val apiKeyCacheService = ApiKeyCacheService()
     
     init {
         initDatabase()
+        apiKeyCacheService.initializeCache()
     }
     
     private fun initDatabase() {
@@ -95,9 +97,7 @@ class DatabaseService {
             ApiKeys.insert {
                 it[keyName] = "default-api-key"
                 it[keyHash] = keyHashIn
-                it[isActive] = true
                 it[createdAt] = LocalDateTime.now()
-                it[expiresAt] = null // 默认API密钥永不过期
             }
             
             logger.info("创建默认API密钥: $apiKey")
@@ -188,23 +188,24 @@ class DatabaseService {
             // 更新默认API密钥
             val updated = ApiKeys.update({ ApiKeys.keyName eq "default-api-key" }) {
                 it[this.keyHash] = keyHashIn
-                it[lastUsedAt] = null
                 it[createdAt] = LocalDateTime.now()
             }
             
             if (updated > 0) {
                 logger.info("默认API密钥已重置: $newApiKey")
+                // 刷新缓存
+                apiKeyCacheService.refreshCache()
                 newApiKey
             } else {
                 // 如果没有找到默认密钥，创建一个新的
                 ApiKeys.insert {
                     it[keyName] = "default-api-key"
                     it[keyHash] = keyHashIn
-                    it[isActive] = true
                     it[createdAt] = LocalDateTime.now()
-                    it[expiresAt] = null
                 }
                 logger.info("创建新的默认API密钥: $newApiKey")
+                // 刷新缓存
+                apiKeyCacheService.refreshCache()
                 newApiKey
             }
         }
@@ -214,82 +215,26 @@ class DatabaseService {
     fun getApiKeyInfo(): ApiKeyStatusInfo? {
         return transaction {
             val result = ApiKeys.select { 
-                (ApiKeys.keyName eq "default-api-key") and (ApiKeys.isActive eq true) 
+                ApiKeys.keyName eq "default-api-key" 
             }.singleOrNull()
             
             result?.let { row ->
                 ApiKeyStatusInfo(
                     maskedKey = "${row[ApiKeys.keyHash].take(8)}...${row[ApiKeys.keyHash].takeLast(8)}",
-                    isActive = row[ApiKeys.isActive],
-                    createdAt = row[ApiKeys.createdAt].toInstant(ZoneOffset.UTC).toKotlinInstant(),
-                    lastUsedAt = row[ApiKeys.lastUsedAt]?.toInstant(ZoneOffset.UTC)?.toKotlinInstant()
+                    createdAt = row[ApiKeys.createdAt].toInstant(ZoneOffset.UTC).toKotlinInstant()
                 )
             }
         }
     }
     
     fun validateApiKeyBasic(apiKey: String): ApiKeyInfo? {
-        return transaction {
-            val keyHash = hashApiKey(apiKey)
-            val result = ApiKeys.select { 
-                (ApiKeys.keyHash eq keyHash) and (ApiKeys.isActive eq true) 
-            }.singleOrNull()
-            
-            result?.let { row ->
-                val expiresAt = row[ApiKeys.expiresAt]
-                val now = LocalDateTime.now()
-                
-                // 检查是否过期
-                if (expiresAt != null && now.isAfter(expiresAt)) {
-                    return@transaction null
-                }
-                
-                ApiKeyInfo(
-                    id = row[ApiKeys.id].value,
-                    keyName = row[ApiKeys.keyName],
-                    isActive = row[ApiKeys.isActive],
-                    createdAt = row[ApiKeys.createdAt].toInstant(ZoneOffset.UTC).toKotlinInstant(),
-                    expiresAt = expiresAt?.toInstant(ZoneOffset.UTC)?.toKotlinInstant(),
-                    lastUsedAt = row[ApiKeys.lastUsedAt]?.toInstant(ZoneOffset.UTC)?.toKotlinInstant()
-                )
-            }
-        }
+        // 使用缓存验证API密钥
+        return apiKeyCacheService.validateApiKey(apiKey)
     }
     
     fun validateApiKeyWithIp(apiKey: String, clientIp: String): Boolean {
-        return transaction {
-            val keyHash = hashApiKey(apiKey)
-            val result = ApiKeys.select { 
-                (ApiKeys.keyHash eq keyHash) and (ApiKeys.isActive eq true) 
-            }.singleOrNull()
-            
-            result?.let { row ->
-                val expiresAt = row[ApiKeys.expiresAt]
-                val now = LocalDateTime.now()
-                
-                // 检查是否过期
-                if (expiresAt != null && now.isAfter(expiresAt)) {
-                    return@transaction false
-                }
-                
-                // 检查IP白名单
-                val ipWhitelist = row[ApiKeys.ipWhitelist]
-                if (ipWhitelist != null && ipWhitelist.isNotEmpty()) {
-                    val allowedIps = ipWhitelist.split(",").map { it.trim() }
-                    if (!allowedIps.contains(clientIp)) {
-                        logger.warn("API密钥使用被拒绝，IP不在白名单: $clientIp")
-                        return@transaction false
-                    }
-                }
-                
-                // 更新最后使用时间
-                ApiKeys.update({ ApiKeys.id eq row[ApiKeys.id] }) {
-                    it[lastUsedAt] = now
-                }
-                
-                true
-            } ?: false
-        }
+        // 使用缓存验证API密钥和IP白名单
+        return apiKeyCacheService.validateApiKeyWithIp(apiKey, clientIp)
     }
     
     fun logSecurityEvent(
@@ -407,6 +352,8 @@ class DatabaseService {
             
             if (updated > 0) {
                 logger.info("API密钥IP白名单已更新: ${ipList.joinToString(", ")}")
+                // 更新缓存
+                apiKeyCacheService.updateIpWhitelistCache("default-api-key", ipList)
                 true
             } else {
                 false
@@ -415,20 +362,8 @@ class DatabaseService {
     }
     
     fun getApiKeyIpWhitelist(): List<String> {
-        return transaction {
-            val result = ApiKeys.select { 
-                (ApiKeys.keyName eq "default-api-key") and (ApiKeys.isActive eq true) 
-            }.singleOrNull()
-            
-            result?.let { row ->
-                val whitelist = row[ApiKeys.ipWhitelist]
-                if (whitelist.isNullOrEmpty()) {
-                    emptyList()
-                } else {
-                    whitelist.split(",").map { it.trim() }
-                }
-            } ?: emptyList()
-        }
+        // 使用缓存获取IP白名单
+        return apiKeyCacheService.getIpWhitelist("default-api-key")
     }
     
     // 系统配置管理（内存缓存）

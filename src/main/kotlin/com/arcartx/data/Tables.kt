@@ -32,11 +32,8 @@ object AdminUsers : IntIdTable() {
 object ApiKeys : IntIdTable() {
     val keyName = varchar("key_name", 100)
     val keyHash = varchar("key_hash", 64)
-    val isActive = bool("is_active").default(true)
     val ipWhitelist = varchar("ip_whitelist", 1000).nullable()
     val createdAt = datetime("created_at").default(LocalDateTime.now())
-    val expiresAt = datetime("expires_at").nullable()
-    val lastUsedAt = datetime("last_used_at").nullable()
 }
 
 object SecurityLogs : IntIdTable() {
