@@ -67,3 +67,9 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         freeCompilerArgs = freeCompilerArgs + "-Xcontext-receivers"
     }
 }
+
+ktor {
+    docker {
+        localImageName.set("arcartx-resource-system")
+    }
+}
